@@ -1,2 +1,19 @@
-*tild
-MeanShift/*tild
+#Git ignore files : non verion controlled files
+
+*~
+
+# MeanShift project folder
+MeanShift/*~
+MeanShift/Build/*
+MeanShift/Build
+
+# Threshold project folder
+Thresholding/*~
+Thresholding/Build/*
+Thresholding/Build
+
+# KMeans project folder
+KMeans/*~
+KMeans/Build/*
+KMeans/Build
+
