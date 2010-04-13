@@ -1,0 +1,10 @@
+ITKExamples
+============
+
+Install CMake (>2.6)
+Download ITK (>3.16)
+Create a build directory
+Go to that build directory
+Run cmake
+build using make
+
