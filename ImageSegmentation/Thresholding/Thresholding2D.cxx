@@ -1,7 +1,9 @@
 #include "itkImageFileReader.h"
 #include "itkImageFileWriter.h"
-#include "itkImageRegionConstIterator.h"
-#include "itkImageRegionIterator.h"
+
+#include "itkNumericTraits.h"
+
+#include "itkThresholdImageFilter.h"
 
 #include <iostream>
 
@@ -20,18 +22,17 @@ int main( int argc, char* argv[] )
   // A file writer (output) :
   typedef itk::ImageFileWriter< ImageType > WriterType;
   
-  // A const iterator to read the input image
-  typedef itk::ImageRegionConstIterator< ImageType > ConstIteratorType;
-  // An iterator to write the output image
-  typedef itk::ImageRegionIterator< ImageType >	IteratorType;  
+  // A threshold filter :
+  typedef itk::ThresholdImageFilter< ImageType > ThresholdFilterType;
 
 
   //**********ARGUMENTS READING*********
   // We translate command line arguments to be interpreted by our example
   
   // We do a very basic check : does the user specify enough parameters :
-  // 4 inputs ( program path, input_filename, and threshold_level, output_filename )
-  if ( argc != 3 )
+  // 5 inputs ( program path, input_filename, and threshold_level low, 
+  //            threshold_level high, output_filename )
+  if ( argc != 4 )
     {
     std::cerr << "Usage: " << std::endl;
     std::cerr << argv[0] << "(.exe) takes 3 arguments" <<std::endl;
@@ -42,14 +43,16 @@ int main( int argc, char* argv[] )
     }
   
   // We convert input arguments
+  // Input filename
   const char* ArgInputFilename = argv[1]; //from string to string
-  //Threshold level
-  PixelType ArgThresholdLevel = static_cast<PixelType> (atoi(argv[2]));
-  const char* ArgOutputFilename = argv[3];
+  // Threshold levels
+  PixelType ArgThresholdLevel = static_cast<PixelType> (atoi(argv[2]));  // string to PixelType
+  // Output filename
+  const char* ArgOutputFilename = argv[3];//from string to string
   
   // We display what the example will compute
   std::cout << "Thresholding " << ArgInputFilename
-            << " at value " << ArgThresholdLevel
+            << " at " << ArgThresholdLevel
             << " output in " << ArgOutputFilename << std::endl;
 
 
@@ -70,8 +73,32 @@ int main( int argc, char* argv[] )
     return EXIT_FAILURE;
     }
 
+  //**********THRESHOLD FILTERING**********
+  // We simply connect the output of the reader to the input of the filter,
+  // reader->Threshold_filter
+  
+  // Threshold filter creation :
+  ThresholdFilterType::Pointer ThresholdFilter = ThresholdFilterType::New();
+  
+  //Threshold filter initialization
+  ThresholdFilter->SetInput(Reader->GetOutput());
+  
+  ThresholdFilter->SetOutsideValue( itk::NumericTraits< PixelType >::Zero );
+    
+  // Threshold level setting
+  ThresholdFilter->ThresholdBelow(ArgThresholdLevel);
+  
+  try 
+    {
+    ThresholdFilter->Update();
+    }
+  catch( itk::ExceptionObject & excp )  // If something goes wrong
+    {
+    std::cerr << "Problem while filtering" << std::endl;
+    std::cerr << excp << std::endl;
+    return EXIT_FAILURE;
+    }
 
-  //TODO Here call the class
 
 	//*********WRITING OUTPUT IMAGE**********
   
@@ -79,12 +106,12 @@ int main( int argc, char* argv[] )
 	WriterType::Pointer Writer = WriterType::New();
   
   // Writer initialization (input and output)
-	Writer->SetFileName( "output.png" );
-	Writer->SetInput( ImageOut);
+	Writer->SetFileName( ArgOutputFilename );  // Threshold_filter->writer
+	Writer->SetInput( ThresholdFilter->GetOutput());  // writer->Output_filename
   
   try
     {
-	  Writer->Update();
+	  Writer->Update();  // This update will update the whole pipeline
     }
   catch( itk::ExceptionObject & excp )  // If something goes wrong
     {

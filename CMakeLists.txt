@@ -8,11 +8,10 @@ IF( ITK_FOUND )
   INCLUDE( ${ITK_USE_FILE} )
 ENDIF( ITK_FOUND )
 
-SET( ITKModules 
-  ImageProcessing
+SET( ITKModules
   ImageSegmentation
 )
 
-FOREACH( var ${EXAMPLE_LIST} )
+FOREACH( var ${ITKModules} )
   ADD_SUBDIRECTORY( ${var} )
-ENDFOREACH( var ${EXAMPLE_LIST} )
+ENDFOREACH( var ${ITKModules} )
