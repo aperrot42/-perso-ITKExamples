@@ -9,7 +9,7 @@ IF( ITK_FOUND )
 ENDIF( ITK_FOUND )
 
 SET( EXAMPLE_LIST
-  MeanShift
+  Thresholding
 )
 
 FOREACH( var ${EXAMPLE_LIST} )
