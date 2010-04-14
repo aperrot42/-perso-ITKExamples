@@ -8,8 +8,9 @@ IF( ITK_FOUND )
   INCLUDE( ${ITK_USE_FILE} )
 ENDIF( ITK_FOUND )
 
-SET( EXAMPLE_LIST
-  ImageProcessing/Thresholding
+SET( ITKModules 
+  ImageProcessing
+  ImageSegmentation
 )
 
 FOREACH( var ${EXAMPLE_LIST} )
