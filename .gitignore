@@ -2,18 +2,13 @@
 *~
 Doxyfile
 BUILD/*
+.DS_Store
 
 # Eclipse project folder
 Eclipse/*
 Eclipse
 
 
-# MeanShift project folder
-ImageProcessing/MeanShift/*~
-
-# Threshold project folder
-ImageProcessing/Thresholding/*~
-
-# KMeans project folder
-ImageProcessing/KMeans/*~
+ImageProcessing/.DS_Store
+ImageSegmentation/.DS_Store
 
