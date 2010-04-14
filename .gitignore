@@ -2,18 +2,23 @@
 
 *~
 
+# Eclipse project folder
+Eclipse/*
+Eclipse
+
+
 # MeanShift project folder
-MeanShift/*~
-MeanShift/Build/*
-MeanShift/Build
+ImageProcessing/MeanShift/*~
+ImageProcessing/MeanShift/Build/*
+ImageProcessing/MeanShift/Build
 
 # Threshold project folder
-Thresholding/*~
-Thresholding/Build/*
-Thresholding/Build
+ImageProcessing/Thresholding/*~
+ImageProcessing/Thresholding/Build/*
+ImageProcessing/Thresholding/Build
 
 # KMeans project folder
-KMeans/*~
-KMeans/Build/*
-KMeans/Build
+ImageProcessing/KMeans/*~
+ImageProcessing/KMeans/Build/*
+ImageProcessing/KMeans/Build
 
