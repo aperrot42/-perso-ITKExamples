@@ -1,24 +1,19 @@
-//==========================================================================
-// Name        : Thresholding.cxx
-// Author      : Antonin
-// Version     : 0.1
-//==========================================================================
-
-#include <itkImageFileReader.h>
-#include <itkImageFileWriter.h>
-#include <itkImageRegionConstIterator.h>
-#include <itkImageRegionIterator.h>
+#include "itkImageFileReader.h"
+#include "itkImageFileWriter.h"
+#include "itkImageRegionConstIterator.h"
+#include "itkImageRegionIterator.h"
 
 #include <iostream>
 
-int main(int argc, char* argv[])
-  {
-
+int main( int argc, char* argv[] )
+{
   //**********TYPEDEF**********
+  // Dimension of the image
+  const unsigned Dimension = 2;
   // The type of manipulated pixels :
   typedef unsigned char PixelType;
   // The type of manipulated images :
-  typedef itk::Image<PixelType,2> ImageType;
+  typedef itk::Image< PixelType, Dimension > ImageType;
 
   // A file reader (input) :
   typedef itk::ImageFileReader< ImageType > ReaderType;
@@ -26,40 +21,43 @@ int main(int argc, char* argv[])
   typedef itk::ImageFileWriter< ImageType > WriterType;
   
   // A const iterator to read the input image
-  typedef itk::ImageRegionConstIterator<ImageType> ConstIteratorType;
+  typedef itk::ImageRegionConstIterator< ImageType > ConstIteratorType;
   // An iterator to write the output image
-  typedef itk::ImageRegionIterator<ImageType>	IteratorType;  
+  typedef itk::ImageRegionIterator< ImageType >	IteratorType;  
 
 
   //**********ARGUMENTS READING*********
   // We translate command line arguments to be interpreted by our example
   
   // We do a very basic check : does the user specify enough parameters :
-  // 3 inputs ( program path, input_filename, and threshold_level)
+  // 4 inputs ( program path, input_filename, and threshold_level, output_filename )
   if ( argc != 3 )
     {
     std::cerr << "Usage: " << std::endl;
-    std::cerr << argv[0] << " inputImageFile Thresold_level(0-255)"
-              << std::endl;
+    std::cerr << argv[0] << "(.exe) takes 3 arguments" <<std::endl;
+    std::cerr <<"1- inputImageFile" <<std::endl;
+    std::cerr <<"2- Thresold_level [0;255]" <<std::endl;
+    std::cerr <<"3- output_filename" <<std::endl;
     return EXIT_FAILURE;
     }
   
   // We convert input arguments
-  const char * ArgFilename = argv[1]; //from string to string
+  const char* ArgInputFilename = argv[1]; //from string to string
   //Threshold level
-  const int ArgThresholdLevel = static_cast<PixelType> (atoi(argv[2]));
+  PixelType ArgThresholdLevel = static_cast<PixelType> (atoi(argv[2]));
+  const char* ArgOutputFilename = argv[3];
   
   // We display what the example will compute
-  std::cout << "Thresholding " << ArgFilename
+  std::cout << "Thresholding " << ArgInputFilename
             << " at value " << ArgThresholdLevel
-            << " output in output.png" << std::endl;
+            << " output in " << ArgOutputFilename << std::endl;
 
 
   //**********INPUT IMAGE READING**********
   
   ReaderType::Pointer Reader = ReaderType::New();  //Create the reader
   
-	Reader->SetFileName( ArgFilename ); // Set the reader input filename
+	Reader->SetFileName( ArgInputFilename ); // Set the reader input filename
   
   try // try to read the input file
     {
@@ -73,64 +71,7 @@ int main(int argc, char* argv[])
     }
 
 
-  //**********TEMPORARY STORING**********
-  // We want to store the image in memory (ImageIn),
-  // read it and create another image for the output.
-  
-  // The input image is the output of the reader
-  ImageType::Pointer ImageIn = Reader->GetOutput(); // Input Image creation
-  
-  // Region definition :
-  // we consider the whole image so we use the largest possible region
-  ImageType::RegionType ImageRegion = ImageIn->GetLargestPossibleRegion();
-
-
-  //**********OUTPUT ALLOCATION**********
-  // First we have to describe the output, 
-  // to be able to correctly allocate memory :
-
-  // creation of the output image
-  ImageType::Pointer ImageOut = ImageType::New(); 
-
-  ImageOut->SetRegions( ImageRegion); //same region for input and output
-  
-  ImageOut->Allocate();// memory allocation for the output
-
-
-  //**********DISPLAY INFORMATIONS**********
-  // Display information about images in memory :
-
-  // Display Input information
-  std::cout << "**********INPUT IMAGE INFORATION**********" << std::endl
-            << ImageIn << std::endl;
-  // Display Output information
-  std::cout << "**********OUTPUT IMAGE INFORATION**********" << std::endl
-            << ImageOut << std::endl;
-
-
-  //**********ITERATIONS ON IMAGE**********
-  // After defining the iterator on the input and on the output,
-  // We go across the whole image
-  
-  //iterators creation :
-  // Constant iterator on input image :
-  ConstIteratorType ItIn( ImageIn,	ImageIn->GetBufferedRegion());
-  // Iterator on output image :
-  IteratorType ItOut( ImageOut, ImageOut->GetBufferedRegion());
-
-  // image scan loop:
-  // while the input iterator is in the considered region
-  PixelType CurrentPixel;
-  while( !ItIn.IsAtEnd() )
-    {
-    CurrentPixel = ItIn.Get(); // read input and store it in current pixel
-      if (CurrentPixel< ArgThresholdLevel)
-        {
-        ItOut.Set(CurrentPixel);
-        }
-    ++ItIn;  // next input pixel
-	  ++ItOut;  // next output pixel
-    }
+  //TODO Here call the class
 
 	//*********WRITING OUTPUT IMAGE**********
   
@@ -151,6 +92,6 @@ int main(int argc, char* argv[])
     std::cerr << excp << std::endl;
     return EXIT_FAILURE;
     }
-  }
 
-
+  return EXIT_SUCCESS;
+}

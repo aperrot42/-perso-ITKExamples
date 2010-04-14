@@ -1,6 +1,7 @@
 #Git ignore files : non verion controlled files
-
 *~
+Doxyfile
+BUILD/*
 
 # Eclipse project folder
 Eclipse/*
@@ -9,16 +10,10 @@ Eclipse
 
 # MeanShift project folder
 ImageProcessing/MeanShift/*~
-ImageProcessing/MeanShift/Build/*
-ImageProcessing/MeanShift/Build
 
 # Threshold project folder
 ImageProcessing/Thresholding/*~
-ImageProcessing/Thresholding/Build/*
-ImageProcessing/Thresholding/Build
 
 # KMeans project folder
 ImageProcessing/KMeans/*~
-ImageProcessing/KMeans/Build/*
-ImageProcessing/KMeans/Build
 
