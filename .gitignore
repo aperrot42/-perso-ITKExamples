@@ -8,6 +8,10 @@ BUILD/*
 Eclipse/*
 Eclipse
 
+#QT editor project files
+CMakeLists.txt.user
+build/*
+qtcreator-build/*
 
 ImageProcessing/.DS_Store
 ImageSegmentation/.DS_Store
