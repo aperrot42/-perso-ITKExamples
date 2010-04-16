@@ -4,7 +4,7 @@
 #include "itkNumericTraits.h"
 
 
-#include "itkFlatStructuringElement.h"
+#include "itkBinaryBallStructuringElement.h"
 #include "itkGrayscaleMorphologicalClosingImageFilter.h"
 
 #include <iostream>
@@ -30,7 +30,8 @@ int main( int argc, char* argv[] )
   typedef itk::BinaryBallStructuringElement< PixelType, Dimension >	StructuringElementType;
 
   // A Morphological filter (Closing):
-  typedef itk::GrayscaleMorphologicalClosingImageFilter< ImageType,ImageType,StructuringElementType > MorphoClosingFilterType;
+  typedef itk::GrayscaleMorphologicalClosingImageFilter< ImageType,ImageType,StructuringElementType >
+      MorphoClosingFilterType;
 
 
 
@@ -91,24 +92,20 @@ int main( int argc, char* argv[] )
   
   StructuringElement.CreateStructuringElement(); // allocating memory
   
-  // Threshold filter creation :
-  MorphologicalFilterType::Pointer ClosingFilter = MorphoClosingFilterType::New();
+  // Closing filter creation :
+  MorphoClosingFilterType::Pointer ClosingFilter = MorphoClosingFilterType::New();
   
-  //Define Filter's Kernel
-  ClosingFilter->SetKernel( structuringElement );
+  // Define Filter's Kernel
+  ClosingFilter->SetKernel( StructuringElement );
   
   
-  //Threshold filter initialization
+  // Closing filter initialization
   ClosingFilter->SetInput(Reader->GetOutput());
-  
-  ClosingFilter->SetOutsideValue( itk::NumericTraits< PixelType >::Zero );
-    
-  // Threshold level setting
-  ThresholdFilter->ThresholdBelow(ArgThresholdLevel);
+      
   
   try 
     {
-    ThresholdFilter->Update();
+    ClosingFilter->Update();
     }
   catch( itk::ExceptionObject & excp )  // If something goes wrong
     {
@@ -125,7 +122,7 @@ int main( int argc, char* argv[] )
   
   // Writer initialization (input and output)
 	Writer->SetFileName( ArgOutputFilename );  // Threshold_filter->writer
-	Writer->SetInput( ThresholdFilter->GetOutput());  // writer->Output_filename
+  Writer->SetInput( ClosingFilter->GetOutput());  // writer->Output_filename
   
   try
     {
