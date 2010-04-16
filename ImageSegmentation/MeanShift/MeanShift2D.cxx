@@ -1,65 +1,66 @@
-//==========================================================================
-// Name        : ThresholdingITKex.cpp
-// Author      : Antonin
-// Version     : 0.1
-//==========================================================================
+#include "itkImageFileReader.h"
+#include "itkImageFileWriter.h"
 
-#include <itkImageFileReader.h>
-#include <itkImageFileWriter.h>
-#include <itkImageRegionConstIterator.h>
-#include <itkImageRegionIterator.h>
+#include "itkNumericTraits.h"
+
+#include "itkThresholdImageFilter.h"
 
 #include <iostream>
 
-int main(int argc, char* argv[])
-  {
-
+int main( int argc, char* argv[] )
+{
   //**********TYPEDEF**********
+  // Dimension of the image
+  const unsigned Dimension = 2;
   // The type of manipulated pixels :
   typedef unsigned char PixelType;
   // The type of manipulated images :
-  typedef itk::Image<PixelType,2> ImageType;
+  typedef itk::Image< PixelType, Dimension > ImageType;
 
   // A file reader (input) :
   typedef itk::ImageFileReader< ImageType > ReaderType;
   // A file writer (output) :
   typedef itk::ImageFileWriter< ImageType > WriterType;
   
-  // A const iterator to read the input image
-  typedef itk::ImageRegionConstIterator<ImageType> ConstIteratorType;
-  // An iterator to write the output image
-  typedef itk::ImageRegionIterator<ImageType>	IteratorType;  
+  // A threshold filter :
+  typedef itk::ThresholdImageFilter< ImageType > ThresholdFilterType;
 
 
   //**********ARGUMENTS READING*********
   // We translate command line arguments to be interpreted by our example
   
   // We do a very basic check : does the user specify enough parameters :
-  // 3 inputs ( program path, input_filename, and threshold_level)
-  if ( argc != 3 )
+  // 5 inputs ( program path, input_filename, and threshold_level low, 
+  //            threshold_level high, output_filename )
+  if ( argc != 4 )
     {
     std::cerr << "Usage: " << std::endl;
-    std::cerr << argv[0] << " inputImageFile Thresold_level(0-255)"
-              << std::endl;
+    std::cerr << argv[0] << "(.exe) takes 3 arguments" <<std::endl;
+    std::cerr <<"1- inputImageFile" <<std::endl;
+    std::cerr <<"2- Thresold_level [0;255]" <<std::endl;
+    std::cerr <<"3- output_filename" <<std::endl;
     return EXIT_FAILURE;
     }
   
   // We convert input arguments
-  const char * ArgFilename = argv[1]; //from string to string
-  //Threshold level
-  const int ArgThresholdLevel = static_cast<PixelType> (atoi(argv[2]));
+  // Input filename
+  const char* ArgInputFilename = argv[1]; //from string to string
+  // Threshold levels
+  PixelType ArgThresholdLevel = static_cast<PixelType> (atoi(argv[2]));  // string to PixelType
+  // Output filename
+  const char* ArgOutputFilename = argv[3];//from string to string
   
   // We display what the example will compute
-  std::cout << "Thresholding " << ArgFilename
-            << " at value " << ArgThresholdLevel
-            << " output in output.png" << std::endl;
+  std::cout << "Thresholding " << ArgInputFilename
+            << " at " << ArgThresholdLevel
+            << " output in " << ArgOutputFilename << std::endl;
 
 
   //**********INPUT IMAGE READING**********
   
   ReaderType::Pointer Reader = ReaderType::New();  //Create the reader
   
-	Reader->SetFileName( ArgFilename ); // Set the reader input filename
+	Reader->SetFileName( ArgInputFilename ); // Set the reader input filename
   
   try // try to read the input file
     {
@@ -72,65 +73,32 @@ int main(int argc, char* argv[])
     return EXIT_FAILURE;
     }
 
-
-  //**********TEMPORARY STORING**********
-  // We want to store the image in memory (ImageIn),
-  // read it and create another image for the output.
+  //**********THRESHOLD FILTERING**********
+  // We simply connect the output of the reader to the input of the filter,
+  // reader->Threshold_filter
   
-  // The input image is the output of the reader
-  ImageType::Pointer ImageIn = Reader->GetOutput(); // Input Image creation
+  // Threshold filter creation :
+  ThresholdFilterType::Pointer ThresholdFilter = ThresholdFilterType::New();
   
-  // Region definition :
-  // we consider the whole image so we use the largest possible region
-  ImageType::RegionType ImageRegion = ImageIn->GetLargestPossibleRegion();
-
-
-  //**********OUTPUT ALLOCATION**********
-  // First we have to describe the output, 
-  // to be able to correctly allocate memory :
-
-  // creation of the output image
-  ImageType::Pointer ImageOut = ImageType::New(); 
-
-  ImageOut->SetRegions( ImageRegion); //same region for input and output
+  //Threshold filter initialization
+  ThresholdFilter->SetInput(Reader->GetOutput());
   
-  ImageOut->Allocate();// memory allocation for the output
-
-
-  //**********DISPLAY INFORMATIONS**********
-  // Display information about images in memory :
-
-  // Display Input information
-  std::cout << "**********INPUT IMAGE INFORATION**********" << std::endl
-            << ImageIn << std::endl;
-  // Display Output information
-  std::cout << "**********OUTPUT IMAGE INFORATION**********" << std::endl
-            << ImageOut << std::endl;
-
-
-  //**********ITERATIONS ON IMAGE**********
-  // After defining the iterator on the input and on the output,
-  // We go across the whole image
+  ThresholdFilter->SetOutsideValue( itk::NumericTraits< PixelType >::Zero );
+    
+  // Threshold level setting
+  ThresholdFilter->ThresholdBelow(ArgThresholdLevel);
   
-  //iterators creation :
-  // Constant iterator on input image :
-  ConstIteratorType ItIn( ImageIn,	ImageIn->GetBufferedRegion());
-  // Iterator on output image :
-  IteratorType ItOut( ImageOut, ImageOut->GetBufferedRegion());
-
-  // image scan loop:
-  // while the input iterator is in the considered region
-  PixelType CurrentPixel;
-  while( !ItIn.IsAtEnd() )
+  try 
     {
-    CurrentPixel = ItIn.Get(); // read input and store it in current pixel
-      if (CurrentPixel< ArgThresholdLevel)
-        {
-        ItOut.Set(CurrentPixel);
-        }
-    ++ItIn;  // next input pixel
-	  ++ItOut;  // next output pixel
+    ThresholdFilter->Update();
     }
+  catch( itk::ExceptionObject & excp )  // If something goes wrong
+    {
+    std::cerr << "Problem while filtering" << std::endl;
+    std::cerr << excp << std::endl;
+    return EXIT_FAILURE;
+    }
+
 
 	//*********WRITING OUTPUT IMAGE**********
   
@@ -138,12 +106,12 @@ int main(int argc, char* argv[])
 	WriterType::Pointer Writer = WriterType::New();
   
   // Writer initialization (input and output)
-	Writer->SetFileName( "output.png" );
-	Writer->SetInput( ImageOut);
+	Writer->SetFileName( ArgOutputFilename );  // Threshold_filter->writer
+	Writer->SetInput( ThresholdFilter->GetOutput());  // writer->Output_filename
   
   try
     {
-	  Writer->Update();
+	  Writer->Update();  // This update will update the whole pipeline
     }
   catch( itk::ExceptionObject & excp )  // If something goes wrong
     {
@@ -151,6 +119,6 @@ int main(int argc, char* argv[])
     std::cerr << excp << std::endl;
     return EXIT_FAILURE;
     }
-  }
 
-
+  return EXIT_SUCCESS;
+}
