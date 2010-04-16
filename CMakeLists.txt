@@ -10,6 +10,7 @@ ENDIF( ITK_FOUND )
 
 SET( ITKModules
   ImageSegmentation
+  ImageFiltering
 )
 
 FOREACH( var ${ITKModules} )
